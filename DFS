@@ -1,0 +1,80 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <stack>
+#include <omp.h>
+
+using namespace std;
+
+class Graph
+{
+private:
+    int numVertices;
+    vector<vector<int>> adjacencyList;
+
+public:
+    /* Graph(int numVertices) : numVertices(numVertices) {
+        adjacencyList.resize(numVertices);
+    } */
+
+    Graph(int numVertices)
+    {
+        this->numVertices = numVertices;
+        adjacencyList.resize(numVertices);
+    }
+
+    void addEdge(int src, int dest)
+    {
+        adjacencyList[src].push_back(dest);
+        adjacencyList[dest].push_back(src);
+    }
+
+
+    void DFS(int startVertex)
+    {
+        vector<bool> visited(numVertices, false);
+        stack<int> s;
+
+        s.push(startVertex);
+
+        while (!s.empty())
+        {
+            int currentVertex = s.top();
+            s.pop();
+
+            if (!visited[currentVertex])
+            {
+                visited[currentVertex] = true;
+                cout << currentVertex << " ";
+
+#pragma omp parallel for
+                for (int neighbor : adjacencyList[currentVertex])
+                {
+                    s.push(neighbor);
+                }
+            }
+        }
+    }
+};
+
+int main()
+{
+    int numVertices = 6;
+    Graph graph(numVertices);
+
+    // Add edges to the graph
+    graph.addEdge(0, 1);
+    graph.addEdge(0, 2);
+    graph.addEdge(1, 3);
+    graph.addEdge(2, 3);
+    graph.addEdge(2, 4);
+    graph.addEdge(3, 4);
+    graph.addEdge(3, 5);
+
+
+    cout << "DFS Traversal: ";
+    graph.DFS(0);
+    cout << endl;
+
+    return 0;
+}
